@@ -279,7 +279,7 @@ def main(winstyle=0):
     img = load_image("player1.gif")
     Player1.images = [img, pg.transform.flip(img, 1, 0)]
     img = load_image("player2.gif")  #２台目の戦車
-    Player2.images = [img, pg.transform.flip(img, -1, 0)]
+    Player2.images = [img, pg.transform.flip(img, -1, 0)]  # ２台目の戦車
     img = load_image("explosion1.gif")
     Explosion.images = [img, pg.transform.flip(img, 1, 1)]
     Alien.images = [load_image(im) for im in ("alien1.gif", "alien2.gif", "alien3.gif")]
@@ -317,7 +317,7 @@ def main(winstyle=0):
 
     # assign default groups to each sprite class
     Player1.containers = all
-    Player2.containers = all
+    Player2.containers = all  # ２台目の戦車
     Alien.containers = aliens, all, lastalien
     Shot.containers = shots, all
     Bomb.containers = bombs, all
@@ -332,7 +332,7 @@ def main(winstyle=0):
     # initialize our starting sprites
     global SCORE
     player1 = Player1()
-    player2 = Player2()
+    player2 = Player2()  # ２台目の戦車
     Alien()  # note, this 'lives' because it goes into a sprite group
     if pg.font:
         all.add(Score())
@@ -380,7 +380,7 @@ def main(winstyle=0):
         direction1 = keystate[pg.K_d] - keystate[pg.K_a]
         player1.move(direction1)
         direction2 = keystate[pg.K_l] - keystate[pg.K_j]
-        player2.move(direction2)
+        player2.move(direction2)  # ２台目の戦車
         firing1 = keystate[pg.K_w]
         firing2 = keystate[pg.K_i]
         if not player1.reloading and firing1 and len(shots) < MAX_SHOTS:
@@ -389,11 +389,11 @@ def main(winstyle=0):
                 shoot_sound.play()
         player1.reloading = firing1
 
-        if not player2.reloading and firing2 and len(shots) < MAX_SHOTS:
+        if not player2.reloading and firing2 and len(shots) < MAX_SHOTS:  # ２台目の戦車
             Shot(player2.gunpos())
             if pg.mixer:
                 shoot_sound.play()
-        player2.reloading = firing2
+        player2.reloading = firing2  # ２台目の戦車
 
 
         # Create new alien
@@ -415,7 +415,7 @@ def main(winstyle=0):
             Explosion(player1)
             SCORE = SCORE + 1
             player1.kill()
-        for alien in pg.sprite.spritecollide(player2, aliens, 1):
+        for alien in pg.sprite.spritecollide(player2, aliens, 1):  # ２台目の戦車
             if pg.mixer:
                 boom_sound.play()
             Explosion(alien)
@@ -440,7 +440,7 @@ def main(winstyle=0):
 
             
 
-        for bomb in pg.sprite.spritecollide(player2, bombs, 1):
+        for bomb in pg.sprite.spritecollide(player2, bombs, 1):   # ２台目の戦車
             if pg.mixer:
                 boom_sound.play()
             Explosion(player2)
