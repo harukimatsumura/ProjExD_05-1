@@ -258,6 +258,7 @@ class Score(pg.sprite.Sprite):
             msg = "Score: %d" % SCORE
             self.image = self.font.render(msg, 0, self.color)
 
+#変更
 
 def main(winstyle=0):
     # Initialize pygame
