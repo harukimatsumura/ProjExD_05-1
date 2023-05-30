@@ -96,6 +96,11 @@ class Player1(pg.sprite.Sprite):
     
     def update(self):
         if self.lives <= 0:
+            gameover_screen = gameover()
+            winstyle = 0  # |FULLSCREEN
+            bestdepth = pg.display.mode_ok(SCREENRECT.size, winstyle, 32)
+            screen = pg.display.set_mode(SCREENRECT.size, winstyle, bestdepth)
+            gameover_screen.draw(screen)
             pg.time.wait(1000)
             pg.quit()
 
@@ -138,6 +143,11 @@ class Player2(pg.sprite.Sprite): #２台目の戦車
 
     def update(self):
         if self.lives <= 0:
+            gameover_screen = gameover()
+            winstyle = 0  # |FULLSCREEN
+            bestdepth = pg.display.mode_ok(SCREENRECT.size, winstyle, 32)
+            screen = pg.display.set_mode(SCREENRECT.size, winstyle, bestdepth)
+            gameover_screen.draw(screen)
             pg.time.wait(1000)
             pg.quit()
             global MAX_SHOTS2
@@ -291,8 +301,6 @@ class gameover:
         pg.display.update()
 
 def main(winstyle=0):
-    gameover_screen = gameover()
-
     global MAX_SHOTS1
     triger=True
     global MAX_SHOTS2
@@ -361,7 +369,6 @@ def main(winstyle=0):
     Score.containers = all
 
     # Create Some Starting Values
-    global score
     alienreload = ALIEN_RELOAD
     clock = pg.time.Clock()
 
@@ -460,7 +467,6 @@ def main(winstyle=0):
             Explosion(player1)
             SCORE = SCORE + 1
             player1.kill()
-            gameover_screen.draw(screen)
             pg.display.update()
             break
 
@@ -507,7 +513,6 @@ def main(winstyle=0):
             Explosion(player1)
             Explosion(bomb)
             player1.kill()
-            gameover_screen.draw(screen)
             pg.display.update()
             break
             
