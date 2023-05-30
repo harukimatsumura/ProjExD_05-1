@@ -35,7 +35,8 @@ if not pg.image.get_extended():
 
 
 # game constants
-MAX_SHOTS =  4 # most player bullets onscreen
+MAX_SHOTS1 = 2 # most player bullets onscreen
+MAX_SHOTS2 = 2
 ALIEN_ODDS = 22  # chances a new alien appears
 BOMB_ODDS = 60  # chances a new bomb will drop
 ALIEN_RELOAD = 12  # frames between new aliens
@@ -91,6 +92,17 @@ class Player1(pg.sprite.Sprite):
         self.reloading = 0
         self.origtop = self.rect.top
         self.facing = -1
+        self.lives = 3
+    
+    def update(self):
+        if self.lives <= 0:
+            pg.time.wait(1000)
+            pg.quit()
+
+    def kill(self):
+        self.lives -= 1
+
+    
 
     def move(self, direction):
         if direction:
@@ -122,6 +134,17 @@ class Player2(pg.sprite.Sprite): #２台目の戦車
         self.reloading = 0
         self.origtop = self.rect.top
         self.facing = 1
+        self.lives = 3
+
+    def update(self):
+        if self.lives <= 0:
+            pg.time.wait(1000)
+            pg.quit()
+            global MAX_SHOTS2
+            MAX_SHOTS2 = 0
+
+    def kill(self):
+        self.lives -= 1
 
     def move(self, direction):
         if direction:
@@ -269,6 +292,10 @@ class gameover:
 
 def main(winstyle=0):
     gameover_screen = gameover()
+
+    global MAX_SHOTS1
+    triger=True
+    global MAX_SHOTS2
     # Initialize pygame
     if pg.get_sdl_version()[0] == 2:
         pg.mixer.pre_init(44100, 32, 2, 1024)
@@ -288,7 +315,7 @@ def main(winstyle=0):
     img = load_image("player1.gif")
     Player1.images = [img, pg.transform.flip(img, 1, 0)]
     img = load_image("player2.gif")  #２台目の戦車
-    Player2.images = [img, pg.transform.flip(img, -1, 0)]
+    Player2.images = [img, pg.transform.flip(img, -1, 0)]  # ２台目の戦車
     img = load_image("explosion1.gif")
     Explosion.images = [img, pg.transform.flip(img, 1, 1)]
     Alien.images = [load_image(im) for im in ("alien1.gif", "alien2.gif", "alien3.gif")]
@@ -326,7 +353,7 @@ def main(winstyle=0):
 
     # assign default groups to each sprite class
     Player1.containers = all
-    Player2.containers = all
+    Player2.containers = all  # ２台目の戦車
     Alien.containers = aliens, all, lastalien
     Shot.containers = shots, all
     Bomb.containers = bombs, all
@@ -341,10 +368,11 @@ def main(winstyle=0):
     # initialize our starting sprites
     global SCORE
     player1 = Player1()
-    player2 = Player2()
+    player2 = Player2()  # ２台目の戦車
     Alien()  # note, this 'lives' because it goes into a sprite group
     if pg.font:
         all.add(Score())
+    cooldown=0    
 
     # Run our main loop whilst the player is alive.
     while player1.alive():
@@ -355,6 +383,8 @@ def main(winstyle=0):
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 return
+            if event.type ==pg.KEYDOWN and event.key ==pg.K_RSHIFT:
+                triger=False
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_f:
                     if not fullscreen:
@@ -389,21 +419,27 @@ def main(winstyle=0):
         direction1 = keystate[pg.K_d] - keystate[pg.K_a]
         player1.move(direction1)
         direction2 = keystate[pg.K_l] - keystate[pg.K_j]
-        player2.move(direction2)
+        player2.move(direction2)  # ２台目の戦車
         firing1 = keystate[pg.K_w]
         firing2 = keystate[pg.K_i]
-        if not player1.reloading and firing1 and len(shots) < MAX_SHOTS:
+        if not player1.reloading and firing1 and len(shots) < MAX_SHOTS1:
             Shot(player1.gunpos())
             if pg.mixer:
                 shoot_sound.play()
         player1.reloading = firing1
 
-        if not player2.reloading and firing2 and len(shots) < MAX_SHOTS:
+        if not player2.reloading and firing2 and len(shots) < MAX_SHOTS2:
             Shot(player2.gunpos())
             if pg.mixer:
                 shoot_sound.play()
         player2.reloading = firing2
-
+        if not triger and cooldown <=120:
+            cooldown+=1
+            MAX_SHOTS1 =7
+            
+        if cooldown >=120:
+            MAX_SHOTS1=2
+            triger=True
 
         # Create new alien
         if alienreload:
@@ -428,13 +464,34 @@ def main(winstyle=0):
             pg.display.update()
             break
 
-        for alien in pg.sprite.spritecollide(player2, aliens, 1):
+        for alien in pg.sprite.spritecollide(player2, aliens, 1):  # ２台目の戦車
             if pg.mixer:
                 boom_sound.play()
             Explosion(alien)
             Explosion(player2)
             SCORE = SCORE + 1
             player2.kill()
+            
+
+        
+        #スコアが10の倍数になったら
+        if SCORE >= 1 and SCORE % 10 == 0:
+            #画面を白くする
+            screen.fill((255, 255, 255), (0, 0, 640,480))
+            pg.display.update()
+            if pg.mixer:
+                boom_sound.play()
+            #画面のエイリアンを倒す
+            for alien in aliens:
+                Explosion(alien)
+                SCORE += 1
+                alien.kill()
+            pg.time.wait(10)
+            #元の背景を描画する 
+            for x in range(0, SCREENRECT.width, bgdtile.get_width()):
+                background.blit(bgdtile, (x, 0))
+            screen.blit(background, (0, 0))
+            pg.display.flip()
 
         # See if shots hit the aliens.
         for alien in pg.sprite.groupcollide(aliens, shots, 1, 1).keys():
@@ -455,7 +512,7 @@ def main(winstyle=0):
             break
             
 
-        for bomb in pg.sprite.spritecollide(player2, bombs, 1):
+        for bomb in pg.sprite.spritecollide(player2, bombs, 1):   # ２台目の戦車
             if pg.mixer:
                 boom_sound.play()
             Explosion(player2)
