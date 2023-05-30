@@ -258,9 +258,17 @@ class Score(pg.sprite.Sprite):
             msg = "Score: %d" % SCORE
             self.image = self.font.render(msg, 0, self.color)
 
-#変更
+class gameover:    
+    def draw(self, screen):
+        """描画"""
+        screen.fill((0, 0, 0))
+        gameover_font = pg.font.SysFont(None, 80)
+        gameover = gameover_font.render("GAME OVER", False, (255,0,0))
+        screen.blit(gameover, ((SCREENRECT.width-gameover.get_width())/2, 100))
+        pg.display.update()
 
 def main(winstyle=0):
+    gameover_screen = gameover()
     # Initialize pygame
     if pg.get_sdl_version()[0] == 2:
         pg.mixer.pre_init(44100, 32, 2, 1024)
@@ -416,6 +424,10 @@ def main(winstyle=0):
             Explosion(player1)
             SCORE = SCORE + 1
             player1.kill()
+            gameover_screen.draw(screen)
+            pg.display.update()
+            break
+
         for alien in pg.sprite.spritecollide(player2, aliens, 1):
             if pg.mixer:
                 boom_sound.play()
@@ -438,7 +450,9 @@ def main(winstyle=0):
             Explosion(player1)
             Explosion(bomb)
             player1.kill()
-
+            gameover_screen.draw(screen)
+            pg.display.update()
+            break
             
 
         for bomb in pg.sprite.spritecollide(player2, bombs, 1):
