@@ -35,7 +35,8 @@ if not pg.image.get_extended():
 
 
 # game constants
-MAX_SHOTS =  4 # most player bullets onscreen
+MAX_SHOTS1 = 2 # most player bullets onscreen
+MAX_SHOTS2 = 2
 ALIEN_ODDS = 22  # chances a new alien appears
 BOMB_ODDS = 60  # chances a new bomb will drop
 ALIEN_RELOAD = 12  # frames between new aliens
@@ -260,6 +261,7 @@ class Score(pg.sprite.Sprite):
 
 
 def main(winstyle=0):
+    global MAX_SHOTS2
     # Initialize pygame
     if pg.get_sdl_version()[0] == 2:
         pg.mixer.pre_init(44100, 32, 2, 1024)
@@ -383,13 +385,13 @@ def main(winstyle=0):
         player2.move(direction2)  # ２台目の戦車
         firing1 = keystate[pg.K_w]
         firing2 = keystate[pg.K_i]
-        if not player1.reloading and firing1 and len(shots) < MAX_SHOTS:
+        if not player1.reloading and firing1 and len(shots) < MAX_SHOTS1:
             Shot(player1.gunpos())
             if pg.mixer:
                 shoot_sound.play()
         player1.reloading = firing1
 
-        if not player2.reloading and firing2 and len(shots) < MAX_SHOTS:  # ２台目の戦車
+        if not player2.reloading and firing2 and len(shots) < MAX_SHOTS2:
             Shot(player2.gunpos())
             if pg.mixer:
                 shoot_sound.play()
@@ -422,6 +424,27 @@ def main(winstyle=0):
             Explosion(player2)
             SCORE = SCORE + 1
             player2.kill()
+            MAX_SHOTS2 = 0
+
+        
+        #スコアが10の倍数になったら
+        if SCORE >= 1 and SCORE % 10 == 0:
+            #画面を白くする
+            screen.fill((255, 255, 255), (0, 0, 640,480))
+            pg.display.update()
+            if pg.mixer:
+                boom_sound.play()
+            #画面のエイリアンを倒す
+            for alien in aliens:
+                Explosion(alien)
+                SCORE += 1
+                alien.kill()
+            pg.time.wait(10)
+            #元の背景を描画する 
+            for x in range(0, SCREENRECT.width, bgdtile.get_width()):
+                background.blit(bgdtile, (x, 0))
+            screen.blit(background, (0, 0))
+            pg.display.flip()
 
         # See if shots hit the aliens.
         for alien in pg.sprite.groupcollide(aliens, shots, 1, 1).keys():
