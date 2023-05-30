@@ -35,7 +35,7 @@ if not pg.image.get_extended():
 
 
 # game constants
-MAX_SHOTS =  4 # most player bullets onscreen
+MAX_SHOTS =  4  # most player bullets onscreen
 ALIEN_ODDS = 22  # chances a new alien appears
 BOMB_ODDS = 60  # chances a new bomb will drop
 ALIEN_RELOAD = 12  # frames between new aliens
@@ -260,6 +260,8 @@ class Score(pg.sprite.Sprite):
 
 
 def main(winstyle=0):
+    global MAX_SHOTS
+    triger=True
     # Initialize pygame
     if pg.get_sdl_version()[0] == 2:
         pg.mixer.pre_init(44100, 32, 2, 1024)
@@ -336,6 +338,7 @@ def main(winstyle=0):
     Alien()  # note, this 'lives' because it goes into a sprite group
     if pg.font:
         all.add(Score())
+    cooldown=0    
 
     # Run our main loop whilst the player is alive.
     while player1.alive():
@@ -346,6 +349,8 @@ def main(winstyle=0):
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 return
+            if event.type ==pg.KEYDOWN and event.key ==pg.K_RSHIFT:
+                triger=False
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_f:
                     if not fullscreen:
@@ -394,6 +399,13 @@ def main(winstyle=0):
             if pg.mixer:
                 shoot_sound.play()
         player2.reloading = firing2
+        if not triger and cooldown <=120:
+            cooldown+=1
+            MAX_SHOTS =7
+            
+        if cooldown >=120:
+            MAX_SHOTS=2
+            triger=True
 
 
         # Create new alien
