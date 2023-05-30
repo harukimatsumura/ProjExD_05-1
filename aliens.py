@@ -261,6 +261,8 @@ class Score(pg.sprite.Sprite):
 
 
 def main(winstyle=0):
+    global MAX_SHOTS1
+    triger=True
     global MAX_SHOTS2
     # Initialize pygame
     if pg.get_sdl_version()[0] == 2:
@@ -338,6 +340,7 @@ def main(winstyle=0):
     Alien()  # note, this 'lives' because it goes into a sprite group
     if pg.font:
         all.add(Score())
+    cooldown=0    
 
     # Run our main loop whilst the player is alive.
     while player1.alive():
@@ -348,6 +351,8 @@ def main(winstyle=0):
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 return
+            if event.type ==pg.KEYDOWN and event.key ==pg.K_RSHIFT:
+                triger=False
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_f:
                     if not fullscreen:
@@ -395,8 +400,14 @@ def main(winstyle=0):
             Shot(player2.gunpos())
             if pg.mixer:
                 shoot_sound.play()
-        player2.reloading = firing2  # ２台目の戦車
-
+        player2.reloading = firing2
+        if not triger and cooldown <=120:
+            cooldown+=1
+            MAX_SHOTS1 =7
+            
+        if cooldown >=120:
+            MAX_SHOTS1=2
+            triger=True
 
         # Create new alien
         if alienreload:
