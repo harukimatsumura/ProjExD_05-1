@@ -140,6 +140,8 @@ class Player2(pg.sprite.Sprite): #２台目の戦車
         if self.lives <= 0:
             pg.time.wait(1000)
             pg.quit()
+            global MAX_SHOTS2
+            MAX_SHOTS2 = 0
 
     def kill(self):
         self.lives -= 1
@@ -279,8 +281,18 @@ class Score(pg.sprite.Sprite):
             msg = "Score: %d" % SCORE
             self.image = self.font.render(msg, 0, self.color)
 
+class gameover:    
+    def draw(self, screen):
+        """描画"""
+        screen.fill((0, 0, 0))
+        gameover_font = pg.font.SysFont(None, 80)
+        gameover = gameover_font.render("GAME OVER", False, (255,0,0))
+        screen.blit(gameover, ((SCREENRECT.width-gameover.get_width())/2, 100))
+        pg.display.update()
 
 def main(winstyle=0):
+    gameover_screen = gameover()
+
     global MAX_SHOTS1
     triger=True
     global MAX_SHOTS2
@@ -448,6 +460,10 @@ def main(winstyle=0):
             Explosion(player1)
             SCORE = SCORE + 1
             player1.kill()
+            gameover_screen.draw(screen)
+            pg.display.update()
+            break
+
         for alien in pg.sprite.spritecollide(player2, aliens, 1):  # ２台目の戦車
             if pg.mixer:
                 boom_sound.play()
@@ -455,7 +471,7 @@ def main(winstyle=0):
             Explosion(player2)
             SCORE = SCORE + 1
             player2.kill()
-            MAX_SHOTS2 = 0
+            
 
         
         #スコアが10の倍数になったら
@@ -491,7 +507,9 @@ def main(winstyle=0):
             Explosion(player1)
             Explosion(bomb)
             player1.kill()
-
+            gameover_screen.draw(screen)
+            pg.display.update()
+            break
             
 
         for bomb in pg.sprite.spritecollide(player2, bombs, 1):   # ２台目の戦車
